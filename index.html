@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Topup BD</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+        input, select, button { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; }
+        button { background: #28a745; color: white; border: none; font-size: 16px; cursor: pointer; border-radius: 5px; margin-top: 15px; }
+        button:hover { background: #218838; }
+        .admin-section { margin-top: 40px; border-top: 2px solid #ccc; padding-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🎮 ডায়মন্ড / ইউসি টপআপ</h2>
+    <form id="topupForm">
+        <label>Player ID (UID):</label>
+        <input type="text" id="playerId" required placeholder="উদাহরণ: 12345678">
+
+        <label>প্যাকেজ বেছে নিন:</label>
+        <select id="package">
+            <option value="115 Diamonds - 80 Tk">115 Diamonds - 80 Tk</option>
+            <option value="240 Diamonds - 160 Tk">240 Diamonds - 160 Tk</option>
+            <option value="610 Diamonds - 400 Tk">610 Diamonds - 400 Tk</option>
+        </select>
+
+        <label>বিকাশ / নগদ TrxID:</label>
+        <input type="text" id="trxId" required placeholder="উদাহরণ: 8N7A6D5C">
+
+        <button type="submit">অর্ডার সাবমিট করুন</button>
+    </form>
+    <p id="msg" style="color: green; text-align: center;"></p>
+
+    <!-- এডমিন প্যানেল -->
+    <div class="admin-section">
+        <h2>🛠️ এডমিন প্যানেল (অর্ডার লিস্ট)</h2>
+        <button onclick="loadOrders()" style="background:#007bff;">অর্ডার রিফ্রেশ করুন</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>UID</th>
+                    <th>Package</th>
+                    <th>TrxID</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="orderTable"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('topupForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            playerId: document.getElementById('playerId').value,
+            package: document.getElementById('package').value,
+            trxId: document.getElementById('trxId').value
+        };
+
+        const res = await fetch('/api/order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        document.getElementById('msg').innerText = result.message;
+        form.reset();
+    });
+
+    async function loadOrders() {
+        const res = await fetch('/api/orders');
+        const orders = await res.json();
+        const table = document.getElementById('orderTable');
+        table.innerHTML = '';
+        orders.forEach(o => {
+            table.innerHTML += `<tr>
+                <td>${o.playerId}</td>
+                <td>${o.package}</td>
+                <td>${o.trxId}</td>
+                <td><b style="color:orange;">${o.status}</b></td>
+            </tr>`;
+        });
+    }
+</script>
+
+</body>
+</html>
